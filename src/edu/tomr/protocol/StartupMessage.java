@@ -87,5 +87,15 @@ public class StartupMessage extends Message {
 	public boolean isDynamicAdd() {
 		return dynamicAdd;
 	}
-	
+
+	@Override
+	public String toString() {
+		return "StartupMessage{" +
+				"msg='" + msg + '\'' +
+				", connectFirst=" + connectFirst +
+				", neighborList=" + neighborList +
+				", nodeList=" + nodeList +
+				", dynamicAdd=" + dynamicAdd +
+				'}';
+	}
 }

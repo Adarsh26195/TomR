@@ -250,7 +250,7 @@ public class Node implements INode {
 	public void handleStartupRequest(List<String> nodeList) {
 		
 		ConfigParams.loadProperties(nodeList);
-		writeKeysToFile();
+		//writeKeysToFile();
 	}
 	
 	public void handleInitRedistribtion(InitRedistributionMessage message) {

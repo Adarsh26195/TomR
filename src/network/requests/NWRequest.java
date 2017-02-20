@@ -191,5 +191,24 @@ public class NWRequest {
 		return srcIP;
 	}
 
-
+	@Override
+	public String toString() {
+		return "NWRequest{" +
+				"request_id='" + request_id + '\'' +
+				", request_type='" + request_type + '\'' +
+				", destIP='" + destIP + '\'' +
+				", srcIP='" + srcIP + '\'' +
+				", startupMessage=" + startupMessage +
+				", newNeighborConnectionMessage=" + newNeighborConnectionMessage +
+				", neighborMessage=" + neighborMessage +
+				", breakFormMessage=" + breakFormMessage +
+				", serviceMessage=" + serviceMessage +
+				", dBMessage=" + dBMessage +
+				", breakIncomingNeighborMsg=" + breakIncomingNeighborMsg +
+				", updateConnMessage=" + updateConnMessage +
+				", initRedisMessage=" + initRedisMessage +
+				", redistributionMessage=" + redistributionMessage +
+				", updateRingMessage=" + updateRingMessage +
+				'}';
+	}
 }

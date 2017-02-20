@@ -8,16 +8,10 @@ public final class ConnectionAddress {
 	public String getIpAddress() {
 		return ipAddress;
 	}
-	public void setIpAddress(String ipAddress) {
-		this.ipAddress = ipAddress;
-	}
 	public int getPortNumber() {
 		return portNumber;
 	}
-	public void setPortNumber(int portNumber) {
-		this.portNumber = portNumber;
-	}
-	
+
 	public ConnectionAddress() {}
 	
 	public ConnectionAddress(String ipAddress, int portNumber) {
@@ -26,16 +20,14 @@ public final class ConnectionAddress {
 	}
 	
 	@Override
-	public boolean equals(Object obj) {
-		
-		ConnectionAddress address = (ConnectionAddress)obj;
-		if(this.ipAddress.equalsIgnoreCase(address.getIpAddress()) &&
-				this.portNumber == address.getPortNumber())
-			return true;
-		
-		return false;
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+
+		ConnectionAddress that = (ConnectionAddress) o;
+
+		if (portNumber != that.portNumber) return false;
+		return ipAddress != null ? ipAddress.equalsIgnoreCase(that.ipAddress) : that.ipAddress == null;
 	}
-	
-	
-	
+
 }

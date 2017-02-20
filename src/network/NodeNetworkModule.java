@@ -80,7 +80,7 @@ public class NodeNetworkModule {
 		else
 			this.neighborModule=setupNeighborConnections(startupRequest.getStartupMessage(),mainNodeObject,false);
 		neighborModule.startServicingRequests();
-		
+		System.out.println("Node "+utils.getSelfIP()+" started neighbor connection queue");
 		//everyone needs to start listening on port 5002 first
 		NetworkResponseHandler incomingResponseHandler=null;
 		try {
@@ -96,6 +96,7 @@ public class NodeNetworkModule {
 		}
 		Thread incomingResponseThread=new Thread(incomingResponseHandler);
 		incomingResponseThread.start();
+		System.out.println("Node "+utils.getSelfIP()+" started listening on 5002");
 				
 		this.responseModule=new NodeResponseModule(startupRequest.getStartupMessage().getNeighborList(), responsePort);
 		responseModule.startServicingResponses();
