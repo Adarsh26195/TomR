@@ -22,8 +22,10 @@ public class Connection {
 	protected Socket socket;
 
 	public Connection(String IP_Address, int port_num) {
+		Constants.globalLog.debug("IP: "+IP_Address+" port: "+port_num);
 		try {
 			socket =new Socket(IP_Address,port_num);
+			Constants.globalLog.debug("Connection with IP: "+IP_Address+" was successful");
 		} catch (UnknownHostException e) {
 			Constants.globalLog.debug("Unknown Host:"+IP_Address);
 			e.printStackTrace();

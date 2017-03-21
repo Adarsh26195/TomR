@@ -10,7 +10,6 @@ public class RequestHandler extends PersistentIncomingConnectionHandler {
 	
 	protected RequestHandler(int incoming_port) {
 		super(incoming_port);
-		// TODO Auto-generated constructor stub
 	}
 
 	/**

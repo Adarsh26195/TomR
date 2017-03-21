@@ -84,7 +84,7 @@ public class NodeNetworkModule {
 		//everyone needs to start listening on port 5002 first
 		NetworkResponseHandler incomingResponseHandler=null;
 		try {
-			//if this is a dynamic addtion:
+			//if this is a dynamic addition:
 			if(startupRequest.getStartupMessage().isDynamicAdd())
 				incomingResponseHandler = new NetworkResponseHandler(responsePort,this,mainNodeObject,true);
 			//else
@@ -218,6 +218,14 @@ public class NodeNetworkModule {
 		
 		
 		if(connectFirst){
+			Constants.globalLog.debug("I am node "+utils.getSelfIP()+" and I will connect first");
+			Constants.globalLog.debug("I will connect to node "+startupMessage.getNeighborList().get(0));
+			try {
+				Thread.sleep(3000);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+				Constants.globalLog.error("Error while sleeping, before sending the neighbor-connect msg", e);
+			}
 			//first connect
 			neighborModule=new NodeNeighborModule(startupMessage.getNeighborList(),neighborServerPort);
 			//then listen
@@ -225,10 +233,19 @@ public class NodeNetworkModule {
 			incomingConnectionsThread.start();
 		}
 		else{
+			Constants.globalLog.debug("I am node "+utils.getSelfIP()+" and I will listen first");
 			//listen
 			Thread incomingConnectionsThread=new Thread(incomingNeighborConnectionHandler);
 			incomingConnectionsThread.start();
 			//then connect
+			try {
+				Thread.sleep(15000);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+				Constants.globalLog.error("Error while sleeping, before sending the neighbor-connect msg", e);
+			}
+			Constants.globalLog.debug("now I will initate connections");
+			Constants.globalLog.debug("I will connect to node "+startupMessage.getNeighborList().get(0));
 			neighborModule=new NodeNeighborModule(startupMessage.getNeighborList(),neighborServerPort);
 			
 		}
