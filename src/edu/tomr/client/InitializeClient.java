@@ -54,14 +54,14 @@ public class InitializeClient {
 		for(int i=1; i<=numOfRequests; i++){
 			//ClientServiceMessage serviceMessage = getServiceMessage();
 			//Connection nodeConnection=new Connection(serviceMessage.getServiceIPAddress(),servicerNodePort);
-			
+
 			//DBMessage query=new DBMessage(requestType, new ClientRequestPayload("File-"+i, randomString.getBytes()), new ClientInfo(utils.getSelfIP()), serviceMessage.getPayloadID());
 			//NWRequest request=new NWRequest(serviceMessage.getPayloadID(),query);
 			//nodeConnection.send_request(request);
 			//this is block wait method
 			//NWResponse response=nodeConnection.getnextResponse();
-			 Runnable worker = new ClientRunner(serverIP,lbPort,servicerNodePort,randomString,requestType,i,utils.getSelfIP());
-			 executor.execute(worker);	
+			 //Runnable worker = new ClientRunner(serverIP,lbPort,servicerNodePort,randomString,requestType,i,utils.getSelfIP());
+			 //executor.execute(worker);
 		}
 		 executor.shutdown();
 	     while (!executor.isTerminated());

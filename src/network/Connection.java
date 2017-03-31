@@ -22,17 +22,30 @@ public class Connection {
 	protected Socket socket;
 
 	public Connection(String IP_Address, int port_num) {
+		int tries = 5;
 		Constants.globalLog.debug("IP: "+IP_Address+" port: "+port_num);
-		try {
-			socket =new Socket(IP_Address,port_num);
-			Constants.globalLog.debug("Connection with IP: "+IP_Address+" was successful");
-		} catch (UnknownHostException e) {
-			Constants.globalLog.debug("Unknown Host:"+IP_Address);
-			e.printStackTrace();
-		} catch (IOException e) {
-			Constants.globalLog.debug("Some kind of IO Exception at Host:"+IP_Address);
-			e.printStackTrace();
+		while (tries > 0) {
+			try {
+				socket = new Socket(IP_Address, port_num);
+				Constants.globalLog.debug("Connection with IP: " + IP_Address + " was successful");
+				tries = 0;
+			} catch (UnknownHostException e) {
+				tries = handleRetry(e, tries, "Unknown Host:" + IP_Address);
+			} catch (IOException e) {
+				tries = handleRetry(e, tries, "Some kind of IO Exception at Host:" + IP_Address);
+			}
 		}
+	}
+
+	private int handleRetry(Exception e, int count, String message) {
+		Constants.globalLog.error(message, e);
+		try {
+			Thread.sleep(500);
+		} catch (InterruptedException e1) {
+			e1.printStackTrace();
+		}
+		Constants.globalLog.debug("Retrying connection");
+		return count--;
 	}
 	
 	public Connection(Socket clientSocket){

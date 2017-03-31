@@ -9,6 +9,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 
 import edu.tomr.utils.ConfigParams;
+import edu.tomr.utils.NodeAddressesUtils;
 import network.NetworkUtilities;
 import network.exception.NetworkException;
 import edu.tomr.network.heartbeat.client.ClientBeatController;
@@ -32,7 +33,7 @@ public class NodeStarter {
 			utils = new NetworkUtilities();
 			initDbNode(utils.getSelfIP());
 			System.out.println("IP>>>>>>>>>> "+utils.getSelfIP());
-			sendDnsIpToEndpoint("data-node", utils.getSelfIP());
+			NodeAddressesUtils.addIpAddress(utils.getSelfIP(), Constants.INITIALIZED, false);
 			dbNode.initNetworkModule();
 		} catch (NetworkException e) {
 
@@ -41,38 +42,6 @@ public class NodeStarter {
 		}
 		//beatController = new ClientBeatController(ConfigParams.getProperty("SERVER_IP"),
 				//	ConfigParams.getIntProperty("SERVER_PORT_NO"), utils.getSelfIP(), NetworkConstants.C_BEAT_PORT);
-
-	}
-
-	private void sendDnsIpToEndpoint(String dns, String ipAddress) {
-
-		try {
-
-			StringBuilder sb = new StringBuilder("http://bg-node:8080/data-node/");
-			sb.append(dns).append("/");
-			sb.append(ipAddress);
-
-			URL url = new URL(sb.toString());
-			HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-			conn.setDoOutput(true);
-			conn.setRequestMethod("GET");
-			conn.setRequestProperty("Content-Type", "application/json");
-
-			if (conn.getResponseCode() != HttpURLConnection.HTTP_OK) {
-				throw new RuntimeException("Failed : HTTP error code : "
-						+ conn.getResponseCode());
-			}
-
-			conn.disconnect();
-
-		} catch (MalformedURLException e) {
-			Constants.globalLog.error("Error while pushing data node info", e);
-			e.printStackTrace();
-		} catch (IOException e) {
-			Constants.globalLog.error("Error while pushing data node info", e);
-			e.printStackTrace();
-
-		}
 
 	}
 

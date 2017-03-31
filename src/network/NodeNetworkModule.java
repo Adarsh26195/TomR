@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.net.Socket;
 import java.util.concurrent.ConcurrentHashMap;
 
+import edu.tomr.utils.NodeAddressesUtils;
 import network.exception.NetworkException;
 import network.requests.NWRequest;
 import network.requests.incoming.NeighborConnectionHandler;
@@ -72,6 +73,7 @@ public class NodeNetworkModule {
 	 */
 	public void initializeNetworkFunctionality(){
 		NWRequest startupRequest=getStartUpRequest(startupMsgPort);
+		NodeAddressesUtils.addIpAddress(utils.getSelfIP(), Constants.READY, true);
 		this.mainNodeObject.handleStartupRequest(startupRequest.getStartupMessage().getNodeList());
 		//if this is a dynamic addition:
 		if(startupRequest.getStartupMessage().isDynamicAdd())
@@ -97,7 +99,13 @@ public class NodeNetworkModule {
 		Thread incomingResponseThread=new Thread(incomingResponseHandler);
 		incomingResponseThread.start();
 		System.out.println("Node "+utils.getSelfIP()+" started listening on 5002");
-				
+
+		try {
+			Thread.sleep(20000);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+			Constants.globalLog.error("Error while sleeping, after listening on port 5002", e);
+		}
 		this.responseModule=new NodeResponseModule(startupRequest.getStartupMessage().getNeighborList(), responsePort);
 		responseModule.startServicingResponses();
 		
@@ -220,12 +228,12 @@ public class NodeNetworkModule {
 		if(connectFirst){
 			Constants.globalLog.debug("I am node "+utils.getSelfIP()+" and I will connect first");
 			Constants.globalLog.debug("I will connect to node "+startupMessage.getNeighborList().get(0));
-			try {
-				Thread.sleep(3000);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-				Constants.globalLog.error("Error while sleeping, before sending the neighbor-connect msg", e);
-			}
+//			try {
+//				Thread.sleep(3000);
+//			} catch (InterruptedException e) {
+//				e.printStackTrace();
+//				Constants.globalLog.error("Error while sleeping, before sending the neighbor-connect msg", e);
+//			}
 			//first connect
 			neighborModule=new NodeNeighborModule(startupMessage.getNeighborList(),neighborServerPort);
 			//then listen

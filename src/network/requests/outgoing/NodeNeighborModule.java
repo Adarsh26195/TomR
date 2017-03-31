@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+import edu.tomr.utils.Constants;
 import network.outgoing.NeighborConnection;
 import network.requests.NWRequest;
 //handles all outgoing requests to neighbors for the node
@@ -16,6 +17,7 @@ public class NodeNeighborModule {
 	public NodeNeighborModule(List<String> neighborList,int neighborServerPort){
 		
 		outgoingNeighborConnections=getConnectionList(neighborList,neighborServerPort);
+		Constants.globalLog.debug("neighbor connection list size: "+outgoingNeighborConnections.size());
 		initializeQueue();
 	}
 	
@@ -34,6 +36,7 @@ public class NodeNeighborModule {
 		
 		for(String IP:neighborList){
 			NeighborConnection connection=new NeighborConnection(IP, neighborServerPort);
+			Constants.globalLog.debug("neighbor connection with IP: "+IP+" was a success!");
 			neighborCons.add(connection);
 		}	
 		return neighborCons;		

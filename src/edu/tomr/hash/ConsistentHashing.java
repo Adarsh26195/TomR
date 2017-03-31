@@ -14,6 +14,7 @@ import com.google.common.hash.Hashing;
 
 import edu.tomr.utils.ConfigParams;
 import edu.tomr.utils.Constants;
+import edu.tomr.utils.NodeAddressesUtils;
 
 public class ConsistentHashing {
 	static TreeMap<Double, String> unitCircle = new TreeMap<Double, String>();
@@ -50,7 +51,7 @@ public class ConsistentHashing {
 		//Initializing the unit circle for the first time
 		if(unitCircle.isEmpty()){
 
-			getCircle(ConfigParams.getIpAddresses());
+			getCircle(NodeAddressesUtils.getIpAddresses());
 		}
 
 		try{

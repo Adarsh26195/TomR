@@ -16,6 +16,14 @@ public class NeighborConnectionHandler extends RequestHandler implements Runnabl
 	private final Node mainNodeObject;
 	private boolean sendInitialResponse=false;
 
+//	public void init() {
+//		try {
+//			initializeClientSocket();
+//		} catch (NetworkException e) {
+//			e.printStackTrace();
+//		}
+//	}
+
 	@Override
 	public void run() { //This needs to listen to incoming neighbor connections and requests
 			

@@ -6,9 +6,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
+import edu.tomr.utils.LBUtils;
+import edu.tomr.utils.NodeAddressesUtils;
 import network.Connection;
 import network.NetworkConstants;
 import network.NetworkUtilities;
+import network.Topology;
 import network.exception.NetworkException;
 import network.requests.NWRequest;
 
@@ -20,7 +23,6 @@ import edu.tomr.protocol.InitRedistributionMessage;
 import edu.tomr.protocol.StartupMessage;
 import edu.tomr.protocol.UpdateConnMessage;
 import edu.tomr.protocol.UpdateRingMessage;
-import edu.tomr.utils.ConfigParams;
 import edu.tomr.utils.Constants;
 
 public class AddMessageHandler implements Runnable {
@@ -51,24 +53,29 @@ public class AddMessageHandler implements Runnable {
 			if(message.isAdd()) {
 				
 				updateConsistentHash(message.getNewNodeIpAddress());
-				String predec = ConfigParams.getPredecessorNode(message.getNewNodeIpAddress());
+				String predec = NodeAddressesUtils.getRandomIpAddress();
+				String newNodeSuccessor = Topology.getNeighbor(predec);
 				//Need to send update ring request to all existing nodes
 				//originalNodes.remove(predec);
 	
 				List<String> temp = new ArrayList<String>();
-				temp.add(ConfigParams.getSuccesorNode(message.getNewNodeIpAddress()));
+				//temp.add(NodeAddressesUtils.getSuccesorNode(message.getNewNodeIpAddress()));
+				temp.add(newNodeSuccessor);
 	
-				NWRequest newStartUpRequest = utils.getNewStartupRequest(new StartupMessage(true, "New_node", temp, ConfigParams.getIpAddresses()));
+				NWRequest newStartUpRequest = utils.getNewStartupRequest(new StartupMessage(true, "New_node", temp, NodeAddressesUtils.getIpAddresses()/*LBUtils.dataNodes(Constants.READY)*/));
 				Connection temp_connection=new Connection(message.getNewNodeIpAddress() ,NetworkConstants.C_SERVER_LISTEN_PORT);
 				temp_connection.send_request(newStartUpRequest);
 				Constants.globalLog.debug("AddMessageHandler: Sending startup request to node: "+message.getNewNodeIpAddress());
 	
-				String newNodeSucessor = ConfigParams.getSuccesorNode(message.getNewNodeIpAddress());
+				//String newNodeSucessor = NodeAddressesUtils.getSuccesorNode(message.getNewNodeIpAddress());
 				NWRequest breakFormRequest = utils.getNewBreakFormRequest(new 
-						BreakFormationMessage("Break_Form", message.getNewNodeIpAddress(), newNodeSucessor));
+						BreakFormationMessage("Break_Form", message.getNewNodeIpAddress(), newNodeSuccessor));
 				temp_connection=new Connection(predec , NetworkConstants.C_SERVER_LISTEN_PORT);
 				temp_connection.send_request(breakFormRequest);
 				Constants.globalLog.debug("AddMessageHandler: Break from request to node: "+predec);
+				Topology.removeNodeTopology(predec);
+				Topology.addNodeTopology(predec, message.getNewNodeIpAddress());
+				Topology.addNodeTopology(message.getNewNodeIpAddress(), newNodeSuccessor);
 				
 				temp_connection.getnextResponse();
 	
@@ -83,20 +90,26 @@ public class AddMessageHandler implements Runnable {
 				//Wait for acknowledgement
 				temp_connection.getnextResponse();
 				
-				List<String> originalNodes = ConfigParams.getIpAddresses();
-				
-				String predec = ConfigParams.getPredecessorNode(nodeToRemove);
+				List<String> originalNodes = NodeAddressesUtils.getIpAddresses();
+
+				String predec = Topology.getOriginalNode(nodeToRemove);
+				//String predec = NodeAddressesUtils.getPredecessorNode(nodeToRemove);
 				originalNodes.remove(nodeToRemove);
-				
-				String newNodeSucessor = ConfigParams.getSuccesorNode(message.getNewNodeIpAddress());
-				NWRequest breakFormRequest = utils.getNewBreakFormRequest(new 
+
+
+				//String newNodeSucessor = NodeAddressesUtils.getSuccesorNode(message.getNewNodeIpAddress());
+				String newNodeSucessor = Topology.getNeighbor(nodeToRemove);
+				NWRequest breakFormRequest = utils.getNewBreakFormRequest(new
 						BreakFormationMessage("Break_Form", newNodeSucessor, newNodeSucessor));
 				temp_connection=new Connection(predec , NetworkConstants.C_SERVER_LISTEN_PORT);
 				temp_connection.send_request(breakFormRequest);
 				Constants.globalLog.debug("AddMessageHandler: Break from request to node: "+predec);
 				
 				ConsistentHashing.updateCircle(originalNodes);
-				ConfigParams.removeIpAddress(nodeToRemove);
+				NodeAddressesUtils.removeIpAddress(nodeToRemove);
+				Topology.removeNodeTopology(predec);
+				Topology.removeNodeTopology(nodeToRemove);
+				Topology.addNodeTopology(predec, newNodeSucessor);
 			}
 
 			//TODO: Remove the whole try catch for add and remove msgs
@@ -106,7 +119,7 @@ public class AddMessageHandler implements Runnable {
 				
 				e.printStackTrace();
 			}*/
-			sendUpdateRingMessage(ConfigParams.getIpAddresses(), message.getNewNodeIpAddress(), message.isAdd());
+			sendUpdateRingMessage(NodeAddressesUtils.getIpAddresses(), message.getNewNodeIpAddress(), message.isAdd());
 			
 		} catch (IOException e) {
 
@@ -121,17 +134,15 @@ public class AddMessageHandler implements Runnable {
 
 	private void updateConsistentHash(String newAddress) {
 
-		List<String> ips = ConfigParams.getIpAddresses();
+		List<String> ips = NodeAddressesUtils.getIpAddresses();
 		ips.add(newAddress);
 
 		ConsistentHashing.updateCircle(ips);
-		ConfigParams.addIpAddress(newAddress);
 	}
 
 	private void sendUpdateRingMessage(List<String> originalNodes, String newNode, boolean add){
 
 		NetworkUtilities utils=null;
-
 		try {
 			utils=new NetworkUtilities();
 
@@ -149,6 +160,10 @@ public class AddMessageHandler implements Runnable {
 		}
 		Constants.globalLog.debug("AddMessageHandler: Sent update ring requests to nodes");
 
+		// Set status of the removed node to INIT again
+		if(!add) {
+			NodeAddressesUtils.removeIpAddress(newNode);
+		}
 	}
 
 }

@@ -2,8 +2,11 @@ package edu.tomr.loadbalancer;
 
 import java.io.IOException;
 import java.net.Socket;
+import java.util.List;
 import java.util.UUID;
 
+import edu.tomr.utils.LBUtils;
+import edu.tomr.utils.NodeAddressesUtils;
 import network.Connection;
 import network.responses.NWResponse;
 import edu.tomr.protocol.ClientServiceMessage;
@@ -66,11 +69,11 @@ public class ClientConnectionHandler implements Runnable {
 		String IPAddress = null;
 		synchronized(turnOf){
 			try{
-	
-			if(turnOf > ConfigParams.getIpAddresses().size() - 1){
+				List<String> dataNodes = NodeAddressesUtils.getIpAddresses();
+			if(turnOf > dataNodes.size() - 1){
 				turnOf = 0;
 			}		
-			IPAddress = ConfigParams.getIpAddresses().get(turnOf);
+			IPAddress = dataNodes.get(turnOf);
 			turnOf++;
 			}
 			catch(Exception e){

@@ -13,9 +13,11 @@ import org.codehaus.jackson.map.ObjectMapper;
 
 import edu.tomr.model.DataNodeList;
 import edu.tomr.utils.Constants;
+import edu.tomr.utils.LBUtils;
 import network.Connection;
 import network.NetworkConstants;
 import network.NetworkUtilities;
+import network.Topology;
 import network.exception.NetworkException;
 import network.requests.NWRequest;
 import network.requests.incoming.LBClientServer;
@@ -54,7 +56,7 @@ public class LoadBalancer {
 			e.printStackTrace();
 		}
 
-		List<String> nodeAddresses = getDataNodes();//ConfigParams.getIpAddresses();
+		List<String> nodeAddresses = LBUtils.dataNodes(Constants.INITIALIZED);//ConfigParams.getIpAddresses();
 
 		//make the last one connectFirst
 		int i;
@@ -67,6 +69,7 @@ public class LoadBalancer {
 			Connection temp_connection=new Connection(nodeAddresses.get(i),startupMsgPort);
 
 			temp_connection.send_request(startupRequest);
+			Topology.addNodeTopology(nodeAddresses.get(i), neighbors.get(0));
 
 		}
 
@@ -77,6 +80,7 @@ public class LoadBalancer {
 		Connection temp_connection=new Connection(nodeAddresses.get(i),startupMsgPort);
 
 		temp_connection.send_request(startupRequest);
+		Topology.addNodeTopology(nodeAddresses.get(i), neighbors.get(0));
 	}
 
 	private static List<String> generateNeighborList(int i, List<String> iPAddresses) {
@@ -106,46 +110,6 @@ public class LoadBalancer {
 		Thread addMsgThread = new Thread(addMsgHandler);
 		addMsgThread.start();
 		
-	}
-
-	private List<String> getDataNodes() {
-
-		try {
-
-			URL url = new URL("http://bg-node:8080/data-nodes");
-			HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-			conn.setRequestMethod("GET");
-			conn.setRequestProperty("Accept", "application/json");
-
-			if (conn.getResponseCode() != 200) {
-				throw new RuntimeException("Failed : HTTP error code : "
-						+ conn.getResponseCode());
-			}
-
-			BufferedReader br = new BufferedReader(new InputStreamReader(
-					(conn.getInputStream())));
-
-			StringBuilder sb = new StringBuilder();
-			String line;
-			while ((line = br.readLine()) != null) {
-				sb.append(line);
-			}
-
-			conn.disconnect();
-
-			System.out.println("Data-nodes: "+sb.toString());
-			ObjectMapper mapper = new ObjectMapper();
-			DataNodeList nodes = mapper.readValue(sb.toString(), DataNodeList.class);
-			return nodes.getIpAddressList();
-
-		} catch (MalformedURLException e) {
-			Constants.globalLog.error("Error while fetching data node list", e);
-			e.printStackTrace();
-		} catch (IOException e) {
-			Constants.globalLog.error("Error while fetching data node list", e);
-			e.printStackTrace();
-		}
-		return null;
 	}
 
 	public static void main(String[] args) {

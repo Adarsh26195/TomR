@@ -20,6 +20,7 @@ public abstract class IncomingConnectionHandler {
 	
 	protected IncomingConnectionHandler(int incoming_port){
 		try {
+			Constants.globalLog.debug("IncomingConnectionHandler: listening on port "+incoming_port);
 			serverSocket=new ServerSocket(incoming_port);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block

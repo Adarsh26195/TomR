@@ -15,31 +15,39 @@ public class ClientRunner implements Runnable {
 	private String serverIP;
 	private int lbport;
 	private int servicerPort;
-	private String message;
+	private String key;
+	private byte[] value;
 	private ClientRequestType requestType=null;
-	private int id;
 	private String selfIP;
 
 	@Override
 	public void run() {
-		// TODO Auto-generated method stub
 		ClientServiceMessage serviceMessage = getServiceMessage();
-		Connection nodeConnection=new Connection(serviceMessage.getServiceIPAddress(),servicerPort);
-		DBMessage query=new DBMessage(requestType, new ClientRequestPayload("File-"+id, message.getBytes()), new ClientInfo(selfIP), serviceMessage.getPayloadID());
-		NWRequest request=new NWRequest(serviceMessage.getPayloadID(),query);
+		Connection nodeConnection = new Connection(serviceMessage.getServiceIPAddress(),servicerPort);
+		DBMessage query = new DBMessage(requestType,
+										new ClientRequestPayload(key, value),
+										new ClientInfo(selfIP),
+										serviceMessage.getPayloadID());
+		NWRequest request = new NWRequest(serviceMessage.getPayloadID(),query);
 		nodeConnection.send_request(request);
 		//this is block wait method
-		NWResponse response=nodeConnection.getnextResponse();
+		NWResponse response = nodeConnection.getnextResponse();
 		Constants.globalLog.debug(response.getAckMsg().toString());
 	}
 	
-	public ClientRunner(String serverIP,int lbport,int servicerPort,String message,ClientRequestType requestType,int id,String selfIP){
+	public ClientRunner(String serverIP,
+						int lbport,
+						int servicerPort,
+						String key,
+						byte[] value,
+						ClientRequestType requestType,
+						String selfIP){
 		this.serverIP=serverIP;
 		this.lbport=lbport;
 		this.servicerPort=servicerPort;
-		this.message=message;
+		this.key=key;
+		this.value=value;
 		this.requestType=requestType;
-		this.id=id;
 		this.selfIP=selfIP;
 	}
 	

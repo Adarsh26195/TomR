@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import edu.tomr.demo.KeyWriter;
+import edu.tomr.utils.NodeAddressesUtils;
 import network.NodeNetworkModule;
 import network.exception.NetworkException;
 import edu.tomr.client.KeyValuePair;
@@ -83,21 +85,22 @@ public class Node implements INode {
 		return requestMapper;
 	}
 
+	private KeyWriter keyWriter;
+
 	/**
 	 * Primary constructor used to initialize the node
 	 * @param selfIpAdd
-	 * @param neigbors
 	 */
 	public Node(String selfIpAdd){
 
 		this.selfIpAddress = selfIpAdd;
 		//initNetworkModule();
-		inMemMap = new ConcurrentHashMap<String, byte[]>();
+		inMemMap = new ConcurrentHashMap<>();
 		setOperation(new MapOperation(inMemMap));
-		clientInbox = new MessageQueue<ClientMessage>();
-		nodeInbox = new MessageQueue<NodeMessage>();
-		requestMapper = new HashMap<String, String>();
-		
+		clientInbox = new MessageQueue<>();
+		nodeInbox = new MessageQueue<>();
+		requestMapper = new HashMap<>();
+		keyWriter = writeKeysToFile();
 	}
 
 	public String getSelfAddress() {
@@ -184,7 +187,7 @@ public class Node implements INode {
 	public void handleUpdateRingRequest(UpdateRingMessage message) {
 		
 		Constants.globalLog.debug("handling update ring requests in node: "+this.getSelfAddress());
-		List<String> originalNodes = ConfigParams.getIpAddresses();
+		List<String> originalNodes = NodeAddressesUtils.getIpAddresses();
 		if(message.isAdd())
 			originalNodes.add(message.getNewNode());
 		else
@@ -245,18 +248,18 @@ public class Node implements INode {
 				this.networkModule.sendOutgoingRequest(message, entry.getKey());
 			}
 		}
+		keyWriter.setForceFlush();
 	}
 	
 	public void handleStartupRequest(List<String> nodeList) {
 		
 		ConfigParams.loadProperties(nodeList);
-		//writeKeysToFile();
 	}
 	
 	public void handleInitRedistribtion(InitRedistributionMessage message) {
 		
 		Constants.globalLog.debug("handling init redistribution in node: "+this.getSelfAddress());
-		List<String> originalNodes = ConfigParams.getIpAddresses();
+		List<String> originalNodes = NodeAddressesUtils.getIpAddresses();
 		originalNodes.remove(getSelfAddress());
 
 		ConsistentHashing.updateCircle(originalNodes);
@@ -278,10 +281,11 @@ public class Node implements INode {
 		}).start();*/
 	}
 	
-	public void writeKeysToFile() {
+	public KeyWriter writeKeysToFile() {
 		
-		FileWriter writer = new FileWriter(ConfigParams.getProperty("KEYS_FILE_PATH"), this.operation);
+		KeyWriter writer = new KeyWriter(this.operation, this.selfIpAddress);
 		Thread t = new Thread(writer);
 		t.start();
+		return writer;
 	}
 }

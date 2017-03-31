@@ -5,6 +5,8 @@ import java.util.stream.Collectors;
 
 import org.codehaus.jackson.annotate.JsonProperty;
 
+import edu.tomr.utils.Constants;
+
 /**
  * Created by muchhals on 2/10/17.
  */
@@ -20,8 +22,10 @@ public class DataNodeList {
     }
 
     // Additional helper methods
-    public List<String> getIpAddressList() {
-        return dataNodes.stream().map(DataNodeInfo::getIpAddress).collect(Collectors.toList());
+    public List<String> getIpAddressList(String filterStatus) {
+        return dataNodes.stream().filter(node -> node.getStatus().equals(filterStatus))
+                                 .map(DataNodeInfo::getIpAddress)
+                                 .collect(Collectors.toList());
     }
 
 }
